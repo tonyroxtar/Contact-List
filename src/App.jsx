@@ -16,13 +16,10 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <nav>
-          <Link to="/contact_list"> Conctact List </Link>
-          <Link to="/new_contact"> New Contact </Link>
-        </nav>
         <Routes>
           <Route path="/contact_list" element={<ContactList />} />
-          <Route path="/new_contact" element={<NewContact />} />
+          <Route path="/new_contact/:id" element={<NewContact />} />
+          <Route path="/new_contact/" element={<NewContact />} />
         </Routes>
       </BrowserRouter>
     </>
