@@ -1,17 +1,16 @@
 import React, { useContext } from "react";
 import { Context } from "../store/appContext";
+import { Link } from "react-router-dom";
 
 const Form = () => {
   const { store, actions } = useContext(Context);
 
   const handleSubmit = async (e) => {
-   
-      e.preventDefault();
-      
+    e.preventDefault();
     if (store.contact.id) {
-      actions.putFetchContact(store.contact.id);
+      await actions.putFetchContact(store.contact.id, store.contact);
     } else {
-     await actions.handleSubmit(e);
+      await actions.handleSubmit(e);
     }
   };
 
@@ -19,16 +18,16 @@ const Form = () => {
     <>
       <form className="p-3" onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="fullName" className="form-label h3">
+          <label htmlFor="name" className="form-label h3">
             Full Name
           </label>
           <input
             type="text"
             className="form-control"
-            id="fullName"
+            id="name"
             placeholder="Enter Full Name"
-            name="full_name"
-            value={store.contact.full_name}
+            name="name"
+            value={store.contact.name || ""}
             onChange={actions.handleChange}
           />
         </div>
@@ -42,21 +41,21 @@ const Form = () => {
             id="email"
             placeholder="Enter email address"
             name="email"
-            value={store.contact.email}
+            value={store.contact.email || ""}
             onChange={actions.handleChange}
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="phomeNumber" className="form-label h3">
+          <label htmlFor="phone" className="form-label h3">
             Phone Number
           </label>
           <input
             type="text"
             className="form-control"
-            id="phoneNumber"
+            id="phone"
             placeholder="Enter phone number"
             name="phone"
-            value={store.contact.phone}
+            value={store.contact.phone || ""}
             onChange={actions.handleChange}
           />
         </div>
@@ -67,16 +66,19 @@ const Form = () => {
           <input
             type="text"
             className="form-control"
-            id="faddress"
+            id="address"
             placeholder="Enter your address"
             name="address"
-            value={store.contact.address}
+            value={store.contact.address || ""}
             onChange={actions.handleChange}
           />
         </div>
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-success">
           {store.contact.id ? "Update" : "Submit"}
         </button>
+        <div>
+          <Link to="/">Or get back to contact list</Link>
+        </div>
       </form>
     </>
   );

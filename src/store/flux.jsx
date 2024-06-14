@@ -1,113 +1,98 @@
 const getState = ({ getStore, getActions, setStore }) => {
+  const API_BASE_URL = 'https://playground.4geeks.com/contact/agendas/tonyroxtar';
+
   return {
     store: {
       contact: {
-        full_name: "",
+        id: null,
+        name: "",
         email: "",
         address: "",
         phone: "",
       },
-
-      listOfContact: [], // Aquí se almacenan mis contactos
+      listOfContact: [], // Inicializado como array
     },
 
     actions: {
       handleChange: (e) => {
         const { name, value } = e.target;
-        setStore({
-          contact: {
-            ...getStore().contact,
-            [name]: value,
-          },
-        });
+        const store = getStore();
+        const updatedContact = {
+          ...store.contact,
+          [name]: value,
+        };
+        setStore({ contact: updatedContact });
       },
 
       handleSubmit: async (e) => {
         e.preventDefault();
-        try {
-            const store = getStore();
-            console.log("Store:", store);
-            
-            const { full_name, email, address, phone } = store.contact;
-    
-            console.log("Full Name:", full_name);
-            console.log("Email:", email);
-            console.log("Address:", address);
-            console.log("Phone:", phone);
-    
-            const response = await fetch(
-                "https://playground.4geeks.com/apis/fake/contact",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        full_name,
-                        email,
-                        agenda_slug: "myContactList",
-                        address,
-                        phone,
-                    }),
-                }
-            );
-            if (!response.ok) {
-                throw new Error("Failed to add contact");
-            }
-            getActions().FetchContacts("myContactList"); // Trae los contactos actualizados despues de que se agrega un nuevo contacto
-        } catch (error) {
-            console.error("Error adding contact:", error);
-        }
-    },
-    
+        const store = getStore();
+        const { name, email, address, phone } = store.contact;
 
-      FetchAgendas: async () => {
+        if (!name || !email || !address || !phone) {
+          console.error("All fields are required.");
+          return;
+        }
+
+        const contactData = {
+          name,
+          email,
+          address,
+          phone,
+          agenda_slug: "tonyroxtar",
+        };
+
         try {
-          const response = await fetch(
-            "https://playground.4geeks.com/apis/fake/contact/agenda"
-          );
+          const response = await fetch(`${API_BASE_URL}/contacts`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(contactData),
+          });
+
           if (!response.ok) {
-            throw new Error("Failed to fetch agendas");
+            const errorData = await response.json();
+            throw new Error(`Failed to add contact: ${errorData.detail ? errorData.detail[0].msg : "Unknown error"}`);
           }
-          const data = await response.json();
-          setStore({ agendas: data });  // Update store with fetched agendas
+
+          getActions().FetchContacts(); // Trae los contactos actualizados después de que se agrega un nuevo contacto
         } catch (error) {
-          console.error("Error fetching agendas:", error);
+          console.error("Error adding contact:", error);
         }
       },
 
       FetchContacts: async () => {
         try {
-          const response = await fetch(
-            "https://playground.4geeks.com/apis/fake/contact/agenda/myContactList"
-          );
+          const response = await fetch(`${API_BASE_URL}/contacts`);
           if (!response.ok) {
             throw new Error("Failed to fetch contacts");
           }
           const data = await response.json();
-          setStore({ listOfContact: data }); // Actualiza el store con los nuevos contactos obtenidos
+          console.log('Fetched contacts:', data.contacts);
+          setStore({ listOfContact: Array.isArray(data.contacts) ? data.contacts : [] }); // Asegúrate de que los datos son un array
         } catch (error) {
           console.error("Error fetching contacts:", error);
+          setStore({ listOfContact: [] });
         }
       },
 
-      putFetchContact: async (contact_id) => {
-        const store = getStore();
+      putFetchContact: async (contact_id, updatedContact) => {
         try {
-          const response = await fetch(
-            `https://playground.4geeks.com/apis/fake/contact/${contact_id}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(store.contact),
-            }
-          );
+          const response = await fetch(`${API_BASE_URL}/contacts/${contact_id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedContact),
+          });
+
           if (!response.ok) {
-            throw new Error("Failed to update contact");
+            const errorData = await response.json();
+            throw new Error(`Failed to update contact: ${errorData.detail ? errorData.detail[0].msg : "Unknown error"}`);
           }
-          actions.FetchContacts();  // Trae la lista actualizada de contactos después de actualziar un contacto
+
+          getActions().FetchContacts();
         } catch (error) {
           console.error("Error updating contact:", error);
         }
@@ -115,20 +100,42 @@ const getState = ({ getStore, getActions, setStore }) => {
 
       deleteFetchContact: async (contact_id) => {
         try {
-          const response = await fetch(
-            `https://playground.4geeks.com/apis/fake/contact/${contact_id}`,
-            {
-              method: "DELETE",
-            }
-          );
+          const response = await fetch(`${API_BASE_URL}/contacts/${contact_id}`, {
+            method: "DELETE",
+          });
+
           if (!response.ok) {
-            throw new Error("Failed to delete contact");
+            const errorData = await response.json();
+            throw new Error(`Failed to delete contact: ${errorData.detail ? errorData.detail[0].msg : "Unknown error"}`);
           }
-          actions.FetchContacts(); // Trae la lista de contactos luego de borrar un contacto
+
+          getActions().FetchContacts();
         } catch (error) {
           console.error("Error deleting contact:", error);
         }
       },
+
+      setStore: (updatedStore) => {
+        console.log('Setting store with:', updatedStore);
+        const store = getStore();
+        setStore({
+          ...store,
+          ...updatedStore,
+        });
+        console.log('New store:', getStore());
+      },
+
+      clearContact: () => {
+        setStore({
+          contact: {
+            id: null,
+            name: "",
+            email: "",
+            address: "",
+            phone: "",
+          }
+        });
+      }
     },
   };
 };

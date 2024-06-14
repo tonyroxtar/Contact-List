@@ -1,21 +1,12 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Context } from '../store/appContext';
-import Card from '../components/Card';
+import React from "react";
+import Card from "../components/Card";
 
 const ContactList = () => {
-
-    const { store, actions } = useContext(Context);
-
-    useEffect(() => {
-      actions.FetchContacts();
-
-    }, []);
-
   return (
-    <>
-      <h1>Lista de Contactos</h1>
+    <div className="p-3">
+      <h1 className="fw-bold"><i className="fa-regular fa-address-book"></i> Contact List</h1>
       <Card />
-    </>
+    </div>
   );
 };
 
