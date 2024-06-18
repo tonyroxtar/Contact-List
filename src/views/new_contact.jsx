@@ -35,7 +35,7 @@ const NewContact = () => {
 
   return (
     <div className='p-3'>
-      <h1 className='fw-bold'><i class="fa-regular fa-address-card"></i> {id ? "Edit Contact" : "New Contact"}</h1>
+      <h1 className='fw-bold mt-3 ms-5'><i class="fa-regular fa-address-card"></i> {id ? "Edit Contact" : "New Contact"}</h1>
       <Form />
     </div>
   );

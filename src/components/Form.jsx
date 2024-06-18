@@ -1,22 +1,23 @@
 import React, { useContext } from "react";
 import { Context } from "../store/appContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Form = () => {
   const { store, actions } = useContext(Context);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (store.contact.id) {
-      await actions.putFetchContact(store.contact.id, store.contact);
+      await actions.putFetchContact(store.contact.id, store.contact, navigate);
     } else {
-      await actions.handleSubmit(e);
+      await actions.handleSubmit(e, navigate);
     }
   };
 
   return (
     <>
-      <form className="p-3" onSubmit={handleSubmit}>
+      <form className="p-3 w-75 mx-auto" onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="name" className="form-label h3">
             Full Name

@@ -1,3 +1,5 @@
+import { toast } from "react-toastify";
+
 const getState = ({ getStore, getActions, setStore }) => {
   const API_BASE_URL = 'https://playground.4geeks.com/contact/agendas/tonyroxtar';
 
@@ -56,7 +58,9 @@ const getState = ({ getStore, getActions, setStore }) => {
             throw new Error(`Failed to add contact: ${errorData.detail ? errorData.detail[0].msg : "Unknown error"}`);
           }
 
-          getActions().FetchContacts(); // Trae los contactos actualizados después de que se agrega un nuevo contacto
+          await getActions().FetchContacts(); // Trae los contactos actualizados después de que se agrega un nuevo contacto
+          toast.success("Contact added successfully!");
+          navigate("/");
         } catch (error) {
           console.error("Error adding contact:", error);
         }
@@ -77,7 +81,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
 
-      putFetchContact: async (contact_id, updatedContact) => {
+      putFetchContact: async (contact_id, updatedContact, navigate) => {
         try {
           const response = await fetch(`${API_BASE_URL}/contacts/${contact_id}`, {
             method: "PUT",
@@ -92,9 +96,12 @@ const getState = ({ getStore, getActions, setStore }) => {
             throw new Error(`Failed to update contact: ${errorData.detail ? errorData.detail[0].msg : "Unknown error"}`);
           }
 
-          getActions().FetchContacts();
+          await getActions().FetchContacts();
+          toast.success("Contact updated successfully!");
+          navigate("/");
         } catch (error) {
           console.error("Error updating contact:", error);
+          toast.error("Error updating contact");
         }
       },
 
@@ -109,9 +116,11 @@ const getState = ({ getStore, getActions, setStore }) => {
             throw new Error(`Failed to delete contact: ${errorData.detail ? errorData.detail[0].msg : "Unknown error"}`);
           }
 
-          getActions().FetchContacts();
+          await getActions().FetchContacts();
+          toast.success("Contact deleted successfully!");
         } catch (error) {
           console.error("Error deleting contact:", error);
+          toast.error("Error deleting contact");
         }
       },
 
