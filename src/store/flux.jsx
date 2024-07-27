@@ -12,7 +12,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         address: "",
         phone: "",
       },
-      listOfContact: [], // Inicializado como array
+      listOfContact: [],
     },
 
     actions: {
@@ -26,7 +26,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         setStore({ contact: updatedContact });
       },
 
-      handleSubmit: async (e) => {
+      handleSubmit: async (e, navigate) => {
         e.preventDefault();
         const store = getStore();
         const { name, email, address, phone } = store.contact;
@@ -45,6 +45,9 @@ const getState = ({ getStore, getActions, setStore }) => {
         };
 
         try {
+          // Ensure the agenda exists before adding a contact
+          await getActions().ensureAgendaExists("tonyroxtar");
+
           const response = await fetch(`${API_BASE_URL}/contacts`, {
             method: "POST",
             headers: {
@@ -58,11 +61,34 @@ const getState = ({ getStore, getActions, setStore }) => {
             throw new Error(`Failed to add contact: ${errorData.detail ? errorData.detail[0].msg : "Unknown error"}`);
           }
 
-          await getActions().FetchContacts(); // Trae los contactos actualizados después de que se agrega un nuevo contacto
+          await getActions().FetchContacts();
           toast.success("Contact added successfully!");
           navigate("/");
         } catch (error) {
           console.error("Error adding contact:", error);
+        }
+      },
+
+      ensureAgendaExists: async (agenda_slug) => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/${agenda_slug}`);
+          if (response.status === 404) {
+            const createResponse = await fetch(`${API_BASE_URL}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ agenda_slug }),
+            });
+
+            if (!createResponse.ok) {
+              const errorData = await createResponse.json();
+              throw new Error(`Failed to create agenda: ${errorData.detail ? errorData.detail[0].msg : "Unknown error"}`);
+            }
+            toast.success("Agenda created successfully!");
+          }
+        } catch (error) {
+          console.error("Error ensuring agenda exists:", error);
         }
       },
 
@@ -74,7 +100,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           }
           const data = await response.json();
           console.log('Fetched contacts:', data.contacts);
-          setStore({ listOfContact: Array.isArray(data.contacts) ? data.contacts : [] }); // Asegúrate de que los datos son un array
+          setStore({ listOfContact: Array.isArray(data.contacts) ? data.contacts : [] });
         } catch (error) {
           console.error("Error fetching contacts:", error);
           setStore({ listOfContact: [] });
